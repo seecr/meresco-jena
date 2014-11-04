@@ -31,17 +31,17 @@ class HttpClient(TriplestoreHttpClient):
         super(HttpClient, self).__init__(pathPrefix=pathPrefix, **kwargs)
 
     def add(self, identifier, data, **kwargs):
-        yield self._httpRequest(path='{0}/data'.format(self._dataset), arguments={'graph': identifier}, data=data, method='PUT')
+        yield self._httpRequest(path='{0}/data'.format(self._pathPrefix), arguments={'graph': identifier}, data=data, method='PUT')
 
     def delete(self, identifier, **kwargs):
-        yield self._httpRequest(path='{0}/data'.format(self._dataset), arguments={'graph': identifier}, method='DELETE')
+        yield self._httpRequest(path='{0}/data'.format(self._pathPrefix), arguments={'graph': identifier}, method='DELETE')
 
     def executeQuery(self, query, queryResultFormat='application/sparql-results+json'):
         result = yield super(HttpClient, self).executeQuery(query=query, queryResultFormat=queryResultFormat)
         raise StopIteration(result)
 
     def _httpRequest(self, path, arguments, method, data=None):
-        path = "{0}/data?{1}".format(self._dataset, urlencode(arguments))
+        path = "{0}/data?{1}".format(self._pathPrefix, urlencode(arguments))
         headers = {}
         if data:
             headers={'Content-Type': 'application/rdf+xml', 'Content-Length': len(data)}
