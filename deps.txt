@@ -1,2 +1,11 @@
 jena-fuseki (>= 1.1.1)
 jena-fuseki (<< 1.2)
+python-weightless-core (>= 0.9.23)
+python-weightless-core (<< 0.10)
+python-seecr-utils (>= 1.0.6)
+python-seecr-utils (<< 1.1)
+meresco-triplestore-client (>= 4.7.4)
+meresco-triplestore-client (<< 4.8)
+python-meresco-components (>= 4.10.10.1)
+python-meresco-components (<< 4.11)
+

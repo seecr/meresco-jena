@@ -27,8 +27,8 @@ from meresco.triplestore import HttpClient as TriplestoreHttpClient
 
 class HttpClient(TriplestoreHttpClient):
 
-    def __init__(self, dataset='/ds', **kwargs):
-        super(HttpClient, self).__init__(dataset=dataset, **kwargs)
+    def __init__(self, pathPrefix='/ds', **kwargs):
+        super(HttpClient, self).__init__(pathPrefix=pathPrefix, **kwargs)
 
     def add(self, identifier, data, **kwargs):
         yield self._httpRequest(path='{0}/data'.format(self._dataset), arguments={'graph': identifier}, data=data, method='PUT')
