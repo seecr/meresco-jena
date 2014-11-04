@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+## begin license ##
+#
+# The Meresco Jena package is an Jena Fuseki Triplestore
+#
+# Copyright (C) 2014 Seecr (Seek You Too B.V.) http://seecr.nl
+#
+# This file is part of "Meresco Jena"
+#
+# "Meresco Jena" is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# "Meresco Jena" is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with "Meresco Jena"; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+## end license ##
+
+from seecr.test.utils import includeParentAndDeps  #DO_NOT_DISTRIBUTE
+includeParentAndDeps(__file__)                     #DO_NOT_DISTRIBUTE
+
+from sys import argv
+from seecr.utils import isRootUser
+from meresco.components import ParseArguments
+from os import execvp, makedirs
+from os.path import join, isdir
+
+if __name__ == '__main__':
+    args = argv[1:]
+    if isRootUser():
+        print 'Do not run as root.'
+        exit(1)
+    parseArguments = ParseArguments()
+    parseArguments.addOption('', '--port', mandatory=True, type='int', help="Jena http port number")
+    parseArguments.addOption('', '--stateDir', mandatory=True, help="Directory to write state.")
+    options, arguments = parseArguments.parse()
+
+    descriptionFile = join(options.stateDir, 'meresco-jena-tdb.ttl')
+    isdir(options.stateDir) or makedirs(options.stateDir)
+    open(descriptionFile, 'w').write("""
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+
+[] ja:loadClass "com.hp.hpl.jena.tdb.TDB" .
+tdb:DatasetTDB  rdfs:subClassOf  ja:RDFDataset .
+tdb:GraphTDB    rdfs:subClassOf  ja:Model .
+
+<#dataset> rdf:type      tdb:DatasetTDB ;
+     tdb:location "{0}" ;
+     tdb:unionDefaultGraph true ;
+     .
+""".format(options.stateDir))
+
+    execvp('fuseki-server', [
+        'fuseki-server',
+        '--desc=%s' % descriptionFile,
+        '--update',
+        '--port=%s' % str(options.port),
+        '/ds'
+        ])
