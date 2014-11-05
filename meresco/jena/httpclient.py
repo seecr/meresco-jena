@@ -25,6 +25,7 @@
 from urllib import urlencode
 from meresco.triplestore import HttpClient as TriplestoreHttpClient
 from weightless.http import httpput, httpdelete
+from traceback import print_exc
 
 class HttpClient(TriplestoreHttpClient):
 
@@ -53,5 +54,8 @@ class HttpClient(TriplestoreHttpClient):
             httpmethod = httpput if method == 'PUT' else httpdelete
             response = yield httpmethod(host=host, port=port, request=path, body=data, headers=headers)
             header, responseBody = response.split("\r\n\r\n", 1)
-            self._verify20x(header, response)
+            try:
+                self._verify20x(header, response)
+            except IOError:
+                print_exc()
         raise StopIteration((header, responseBody))
