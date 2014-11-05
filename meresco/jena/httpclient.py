@@ -24,6 +24,7 @@
 
 from urllib import urlencode
 from meresco.triplestore import HttpClient as TriplestoreHttpClient
+from weightless.http import httpput, httpdelete
 
 class HttpClient(TriplestoreHttpClient):
 
@@ -45,11 +46,12 @@ class HttpClient(TriplestoreHttpClient):
         headers = {}
         if data:
             headers={'Content-Type': 'application/rdf+xml', 'Content-Length': len(data)}
+        host, port = self._triplestoreServer()
         if self.synchronous:
-            host, port = self._triplestoreServer()
-            header, body = self._urlopen('http://{0}:{1}{2}'.format(host, port, path), data=data, method=method, headers=headers)
+            header, responseBody = self._urlopen('http://{0}:{1}{2}'.format(host, port, path), data=data, method=method, headers=headers)
         else:
-            response = yield self._httppost(host=host, port=port, request=path, body=body, headers=headers)
+            httpmethod = httpput if method == 'PUT' else httpdelete
+            response = yield httpmethod(host=host, port=port, request=path, body=data, headers=headers)
             header, responseBody = response.split("\r\n\r\n", 1)
             self._verify20x(header, response)
-        raise StopIteration((header, body))
+        raise StopIteration((header, responseBody))
